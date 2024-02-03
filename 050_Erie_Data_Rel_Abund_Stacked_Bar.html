@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Erie Data: Relative Abundance</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/clipboard/clipboard.min.js"></script>
+<script src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/quarto-html/quarto.js"></script>
+<script src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/quarto-html/popper.min.js"></script>
+<script src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/quarto-html/anchor.min.js"></script>
+<link href="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="050_Erie_Data_Rel_Abund_Stacked_Bar_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Erie Data: Relative Abundance</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial we will continue to work with the Lake Erie data set. This time, however, we will start with the clean data that we created last time. Our goal is to create a plot that shows how bacterial communities change over time at the three sampling sites.</p>
+<p>The OTUs in the data are classified to the genus level. There are 806 genera in the taxonomy table even after the cleaning we did last time. In order to easily visualize the changes in the bacterial communities we will aggregate the data at the phylum level, so that we are working with fewer (but larger) taxonomic groups. After aggregating to the phylum level, we will compute the relative abundance of the phyla in each sample. To simplify the data even more, we will drop the phyla that make up a small fraction of the reads in a sample. Our analysis will focus on how the relative abundance of important phyla change over time. We will plot the relative abundance data using a stacked bar plot.</p>
+</section>
+<section id="your-quarto-document" class="level2">
+<h2 class="anchored" data-anchor-id="your-quarto-document">Your Quarto document</h2>
+<p>Create a new Quarto document for this tutorial, give it an informative name, and save it in the <em>code</em> subdirectory of your <em>watershedErie</em> directory. As you work through this tutorial, transcribe the code into your own document and run it. Make sure you also write about what you are doing so that you can understand your work when you read it later.</p>
+<p>Don’t forget the setup information we need to put at the top of all of our Quarto documents.</p>
+</section>
+<section id="setup-and-reading-in-the-clean-data" class="level2">
+<h2 class="anchored" data-anchor-id="setup-and-reading-in-the-clean-data">Setup and reading in the clean data</h2>
+<p>Let’s start by cleaning up our work space and loading the required packages.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          used (Mb) gc trigger (Mb) limit (Mb) max used (Mb)
+Ncells  579878 31.0    1322072 70.7         NA   669442 35.8
+Vcells 1069679  8.2    8388608 64.0     102400  1851737 14.2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.3     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next we load the data that we cleaned in the last tutorial. If you saved the files in the correct place (the <em>clean_data</em> folder) and used the same names as I did, then the following code should work without modification.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"clean_data/erie.rds"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>erie_tax <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"clean_data/erie_tax.rds"</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>erie_meta <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">"clean_data/erie_meta.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="remove-samples-with-a-small-number-of-reads-10k" class="level2">
+<h2 class="anchored" data-anchor-id="remove-samples-with-a-small-number-of-reads-10k">Remove samples with a small number of reads (&lt;10k)</h2>
+<p>We will remove any samples with a sequencing depth of less than 10,000 reads. Since we added the sequencing depth to the metadata this is easy to do.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>erie_meta <span class="ot">&lt;-</span> erie_meta <span class="sc">%&gt;%</span> <span class="fu">filter</span>(sequencingDepth <span class="sc">&gt;=</span> <span class="dv">10000</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>erie_samples <span class="ot">&lt;-</span> erie_meta <span class="sc">%&gt;%</span> <span class="fu">pull</span>(SampleID)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span> <span class="fu">filter</span>(SampleID <span class="sc">%&gt;%</span> <span class="fu">is.element</span>(erie_samples))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="aggregating-the-data-to-the-phylum-level" class="level2">
+<h2 class="anchored" data-anchor-id="aggregating-the-data-to-the-phylum-level">Aggregating the data to the phylum level</h2>
+<p>Let’s remind ourselves how the <em>erie</em> (shared) data are structured. There is one row per sample. All but the first three columns list the abundance (number of reads) of seqeuences associated with the OTUs. Since there are 7522 OTUs in the data, there are a lot of columns (7525).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>erie</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 56 × 7,525
+   label SampleID  numOtus Otu00002 Otu00004 Otu00005 Otu00006 Otu00007 Otu00008
+   &lt;dbl&gt; &lt;chr&gt;       &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;
+ 1  0.03 E0010_CNA   19656     1271     3264        3       41      110     1351
+ 2  0.03 E0012_CNA   19656      672     2273        9       71      779     1142
+ 3  0.03 E0014_CNA   19656     1450     2874        5       15      283      791
+ 4  0.03 E0016_CNA   19656     1135     1897        0      204      923      709
+ 5  0.03 E0018_CNA   19656     1297     2689        0      264     1701     1327
+ 6  0.03 E0020_CNA   19656     1238     2835      116      435     1149     1462
+ 7  0.03 E0022_CNA   19656     1340     3049       60      637     1014     1419
+ 8  0.03 E0024_CNA   19656     1155     2226        7      645      917     1283
+ 9  0.03 E0026_CNA   19656     2119     4272      122     1323      683     1788
+10  0.03 E0028_CNA   19656      880     1985      425     1803      869      741
+# ℹ 46 more rows
+# ℹ 7,516 more variables: Otu00010 &lt;int&gt;, Otu00011 &lt;int&gt;, Otu00012 &lt;int&gt;,
+#   Otu00013 &lt;int&gt;, Otu00014 &lt;int&gt;, Otu00015 &lt;int&gt;, Otu00016 &lt;int&gt;,
+#   Otu00017 &lt;int&gt;, Otu00018 &lt;int&gt;, Otu00019 &lt;int&gt;, Otu00021 &lt;int&gt;,
+#   Otu00023 &lt;int&gt;, Otu00024 &lt;int&gt;, Otu00025 &lt;int&gt;, Otu00026 &lt;int&gt;,
+#   Otu00027 &lt;int&gt;, Otu00028 &lt;int&gt;, Otu00029 &lt;int&gt;, Otu00030 &lt;int&gt;,
+#   Otu00031 &lt;int&gt;, Otu00032 &lt;int&gt;, Otu00033 &lt;int&gt;, Otu00034 &lt;int&gt;, …</code></pre>
+</div>
+</div>
+<section id="lengthening-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="lengthening-the-data">Lengthening the data</h3>
+<p>It is sometimes helpful to change the <em>shape</em> of a data set, especially preceding aggregation or some other summary computation. It is important to note that changing the shape of a data set does not change the information in the data set. Typically, we will change the shape of a data set by transforming it so that it has more rows and fewer columns (lengthening the data) or so that it has more columns and fewer rows (widening the data).</p>
+<p>We will make a long version of the <em>erie</em> data so that we can more more easily aggregate at the phylum level. This will also make the data more suitable for plotting later (ggplot works best with long data formats). To lengthen or widen a data set we use <em>pivot</em> commands. Let’s pivot!</p>
+<p>Our goal is to transform the data so that there is a row for each OTU in each sample. We already have a <em>SampleID</em> column. We need to add an <em>OTU</em> column so we know which <em>OTU</em> a row corresponds with. We also need to add a column to keep track of the abundance (number of reads) for each OTU in each sample. Before we do anything we drop the extraneous label and numOtus columns.</p>
+<p>The following command tells R that we want to lengthen our data (<em>pivot_longer</em>), taking all of the columns that start with the string “Otu” and putting their names in a new column called <em>OTU</em> and their values in a new column called <em>Abundance</em>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(label,numOtus)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"Otu"</span>),</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"OTU"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"Abundance"</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>erie</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 421,232 × 3
+   SampleID  OTU      Abundance
+   &lt;chr&gt;     &lt;chr&gt;        &lt;int&gt;
+ 1 E0010_CNA Otu00002      1271
+ 2 E0010_CNA Otu00004      3264
+ 3 E0010_CNA Otu00005         3
+ 4 E0010_CNA Otu00006        41
+ 5 E0010_CNA Otu00007       110
+ 6 E0010_CNA Otu00008      1351
+ 7 E0010_CNA Otu00010      1956
+ 8 E0010_CNA Otu00011      3162
+ 9 E0010_CNA Otu00012        48
+10 E0010_CNA Otu00013       139
+# ℹ 421,222 more rows</code></pre>
+</div>
+</div>
+<p>Note that we now have a row for each OTU for different sample. We now have a lot of rows (56 samples * 7522 OTUS = 411232) and only a few columns.</p>
+</section>
+<section id="simplifying-the-taxonomy-table" class="level3">
+<h3 class="anchored" data-anchor-id="simplifying-the-taxonomy-table">Simplifying the taxonomy table</h3>
+<p>Let’s remind ourselves of the structure of the taxonomy table. There is a row for each OTU. The last 7 columns give the taxonomic classification of the OTUs at descending taxonomic levels.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>erie_tax</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7,522 × 9
+   OTU        Size Kingdom  Phylum         Class      Order Family Genus Species
+   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;  
+ 1 Otu00002 280694 Bacteria Proteobacteria Betaprote… Burk… Comam… Limn… ""     
+ 2 Otu00004 564953 Bacteria Actinobacteria Actinobac… Fran… Spori… hgcI… ""     
+ 3 Otu00005 388677 Bacteria Cyanobacteria  Cyanobact… Subs… Famil… Micr… ""     
+ 4 Otu00006 447037 Bacteria Actinobacteria Actinobac… Fran… Spori… hgcI… ""     
+ 5 Otu00007 134495 Bacteria Cyanobacteria  Cyanobact… Subs… Famil… Syne… ""     
+ 6 Otu00008 143655 Bacteria Bacteroidetes  Sphingoba… Sphi… Chiti… Sedi… ""     
+ 7 Otu00010 147682 Bacteria Actinobacteria Actinobac… Fran… Spori… uncl… ""     
+ 8 Otu00011 241217 Bacteria Actinobacteria Actinobac… Fran… Spori… hgcI… ""     
+ 9 Otu00012  67816 Bacteria Proteobacteria Alphaprot… Rhod… Aceto… Rose… ""     
+10 Otu00013  58499 Bacteria Proteobacteria Betaprote… Burk… Oxalo… uncl… ""     
+# ℹ 7,512 more rows</code></pre>
+</div>
+</div>
+<p>Since our goal is to eventually aggregate at the phylum level, let’s create a simplified taxonomy table that just has OTU, and Phylum information (remember we have already filtered out everyhing but bacteria). This is easy to do with the <em>select</em> function, whose job is to select columns to retain in the data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>erie_tax_phylum <span class="ot">&lt;-</span> erie_tax <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(OTU, Phylum)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>erie_tax_phylum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7,522 × 2
+   OTU      Phylum        
+   &lt;chr&gt;    &lt;chr&gt;         
+ 1 Otu00002 Proteobacteria
+ 2 Otu00004 Actinobacteria
+ 3 Otu00005 Cyanobacteria 
+ 4 Otu00006 Actinobacteria
+ 5 Otu00007 Cyanobacteria 
+ 6 Otu00008 Bacteroidetes 
+ 7 Otu00010 Actinobacteria
+ 8 Otu00011 Actinobacteria
+ 9 Otu00012 Proteobacteria
+10 Otu00013 Proteobacteria
+# ℹ 7,512 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="labeling-the-phyla-in-the-erie-sample-data-by-joining-the-data-sets" class="level3">
+<h3 class="anchored" data-anchor-id="labeling-the-phyla-in-the-erie-sample-data-by-joining-the-data-sets">Labeling the phyla in the <em>erie</em> sample data by joining the data sets</h3>
+<p>Before we aggregate the sample data at the phylum level, we have to attach approriate phylum labels to the OTUs. In essence, we want to <em>join</em> the lengthened <em>erie</em> data, which has information about OTUs, with the simplified <em>erie_tax_phylum</em> taxonomoy data, which matches OTUs with phylum labels. We can use a <em>join</em> command to accomplish this.</p>
+<p>This command takes the data set on the left (<em>erie</em>) and joins it with the data set on the right (<em>erie_tax_phylum</em>) in a way that retains the rows of the data set on the left (hence, <em>left_join</em>). The <em>join</em> command looks for columns that the two data sets have in common (in this case just <em>OTU</em>) and joins <em>by</em> those columns. This means that for each row in the <em>erie</em> data, it determines the OTU for that row, finds that OTU in the <em>erie_tax_phylum</em> data, and adds the data associated with that OTU (<em>Kingdom</em> and <em>Phylum</em>) to the <em>erie</em> data. As a result, <em>Kingdom</em> and <em>Phylum</em> columns are added to the <em>erie</em> data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(erie_tax_phylum)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(OTU)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>erie</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 421,232 × 4
+   SampleID  OTU      Abundance Phylum        
+   &lt;chr&gt;     &lt;chr&gt;        &lt;int&gt; &lt;chr&gt;         
+ 1 E0010_CNA Otu00002      1271 Proteobacteria
+ 2 E0010_CNA Otu00004      3264 Actinobacteria
+ 3 E0010_CNA Otu00005         3 Cyanobacteria 
+ 4 E0010_CNA Otu00006        41 Actinobacteria
+ 5 E0010_CNA Otu00007       110 Cyanobacteria 
+ 6 E0010_CNA Otu00008      1351 Bacteroidetes 
+ 7 E0010_CNA Otu00010      1956 Actinobacteria
+ 8 E0010_CNA Otu00011      3162 Actinobacteria
+ 9 E0010_CNA Otu00012        48 Proteobacteria
+10 E0010_CNA Otu00013       139 Proteobacteria
+# ℹ 421,222 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="performing-the-aggregation" class="level3">
+<h3 class="anchored" data-anchor-id="performing-the-aggregation">Performing the aggregation</h3>
+<p>Now we aggregate the sample data. Our goal is to have one row per phylum (rather than OTU) for each sample and a column that lists the abundance (total number of reads) for each phylum in each sample.</p>
+<p>We start by <em>grouping</em> the data by <em>sampleID</em> and <em>Phylum</em>. This does not change the shape of the data set or the information contained in it, it just adds a <em>group</em> structure. Each group will contain all of the rows associated with a single phylum within a single sample. We add this structure so that we can aggregate within each group. Note that the structure is indicated in the print out.</p>
+<p>We remove the ungrouped data from the workspace using the <em>rm</em> command and free up some memory using the <em>gc</em> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>erie_phylum <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(SampleID, Phylum)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>erie_phylum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 421,232 × 4
+# Groups:   SampleID, Phylum [2,408]
+   SampleID  OTU      Abundance Phylum        
+   &lt;chr&gt;     &lt;chr&gt;        &lt;int&gt; &lt;chr&gt;         
+ 1 E0010_CNA Otu00002      1271 Proteobacteria
+ 2 E0010_CNA Otu00004      3264 Actinobacteria
+ 3 E0010_CNA Otu00005         3 Cyanobacteria 
+ 4 E0010_CNA Otu00006        41 Actinobacteria
+ 5 E0010_CNA Otu00007       110 Cyanobacteria 
+ 6 E0010_CNA Otu00008      1351 Bacteroidetes 
+ 7 E0010_CNA Otu00010      1956 Actinobacteria
+ 8 E0010_CNA Otu00011      3162 Actinobacteria
+ 9 E0010_CNA Otu00012        48 Proteobacteria
+10 E0010_CNA Otu00013       139 Proteobacteria
+# ℹ 421,222 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(erie)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          used (Mb) gc trigger  (Mb) limit (Mb) max used  (Mb)
+Ncells 1065468 57.0    2012385 107.5         NA  2012385 107.5
+Vcells 3628087 27.7    8388608  64.0     102400  8082487  61.7</code></pre>
+</div>
+</div>
+<p>Now we aggregate the data. The summarize function creates a specified summary of each group in a grouped data set. Here, we want to sum the number of reads per OTU within each phylum for each sample. So, we create an <em>Abundance</em> column that holds the sum of the previous <em>Abundance</em> column within each group. Note that the resulting data set has fewer rows, and that it no longer has OTU information (since we have aggregated at the phylum level). Also note that the data are still grouped by <em>SampleID</em>. We will exploit this grouping later.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>erie_phylum <span class="ot">&lt;-</span> erie_phylum <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">Abundance =</span> <span class="fu">sum</span>(Abundance))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'SampleID'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>erie_phylum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,408 × 3
+# Groups:   SampleID [56]
+   SampleID  Phylum                  Abundance
+   &lt;chr&gt;     &lt;chr&gt;                       &lt;int&gt;
+ 1 E0010_CNA Acidobacteria                  32
+ 2 E0010_CNA Actinobacteria              12128
+ 3 E0010_CNA Armatimonadetes                15
+ 4 E0010_CNA BD1-5                           3
+ 5 E0010_CNA Bacteroidetes                9020
+ 6 E0010_CNA CKC4                            0
+ 7 E0010_CNA Candidate_division_BRC1         1
+ 8 E0010_CNA Candidate_division_JS1          0
+ 9 E0010_CNA Candidate_division_OD1         30
+10 E0010_CNA Candidate_division_OP11         0
+# ℹ 2,398 more rows</code></pre>
+</div>
+</div>
+<p>In general, following a <em>summarize</em> operation, the resulting data frame can still be grouped if the original data frame is grouped on more than one variable. Only the grouping by the last grouping variable is removed. Since our data are grouped by <em>SampleID</em> and <em>Phylum</em>, the result is still grouped by <em>SampleID</em>.</p>
+</section>
+<section id="computing-relative-abundances" class="level3">
+<h3 class="anchored" data-anchor-id="computing-relative-abundances">Computing relative abundances</h3>
+<p>Now compute the relative abundances of each phylum in each sample. Instead of listing the number of reads for each phylum within each sample, we want to know the proportion of the total reads in the sample that are made up by each phylum. Thus, we need to divide the <em>Abundance</em> of each phylum in a sample by the sum of the <em>Abundance</em> for each sample (across all phyla in the sample).</p>
+<p>We can use the <em>mutate</em> command to compute the relative abundance in a single opeation. We take advantage of the fact that the data are already grouped by SampleID. Whenever a <em>mutate</em> command is applied to a grouped data set, any summary operations (sum, mean, median, sd, etc.) is applied at the group level rather than across the whole data set. Thus, the sum computed in the following mutate command will be the group sum (the total number of reads for each sample).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>erie_phylum <span class="ot">&lt;-</span> erie_phylum <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Rel_Abundance =</span> Abundance<span class="sc">/</span><span class="fu">sum</span>(Abundance, <span class="at">na.rm=</span><span class="cn">TRUE</span>))</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>erie_phylum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,408 × 4
+# Groups:   SampleID [56]
+   SampleID  Phylum                  Abundance Rel_Abundance
+   &lt;chr&gt;     &lt;chr&gt;                       &lt;int&gt;         &lt;dbl&gt;
+ 1 E0010_CNA Acidobacteria                  32     0.00112  
+ 2 E0010_CNA Actinobacteria              12128     0.424    
+ 3 E0010_CNA Armatimonadetes                15     0.000525 
+ 4 E0010_CNA BD1-5                           3     0.000105 
+ 5 E0010_CNA Bacteroidetes                9020     0.316    
+ 6 E0010_CNA CKC4                            0     0        
+ 7 E0010_CNA Candidate_division_BRC1         1     0.0000350
+ 8 E0010_CNA Candidate_division_JS1          0     0        
+ 9 E0010_CNA Candidate_division_OD1         30     0.00105  
+10 E0010_CNA Candidate_division_OP11         0     0        
+# ℹ 2,398 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="filtering-out-uncommon-phyla" class="level3">
+<h3 class="anchored" data-anchor-id="filtering-out-uncommon-phyla">Filtering out uncommon phyla</h3>
+<p>Some of the phyla make up only a small proportion of the sample. We will simplify the data set by removing any phyla that make up 2% or less of each sample. Before we do that let’s take a look at how many phyla are present in the entire data set before filtering. There are currently 43 phyla.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>erie_phylum <span class="sc">%&gt;%</span> ungroup <span class="sc">%&gt;%</span> <span class="fu">count</span>(Phylum) <span class="co"># ungroup so we are not counting phyla within each Sample</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 43 × 2
+   Phylum                      n
+   &lt;chr&gt;                   &lt;int&gt;
+ 1 Acidobacteria              56
+ 2 Actinobacteria             56
+ 3 Armatimonadetes            56
+ 4 BD1-5                      56
+ 5 Bacteroidetes              56
+ 6 CKC4                       56
+ 7 Candidate_division_BRC1    56
+ 8 Candidate_division_JS1     56
+ 9 Candidate_division_OD1     56
+10 Candidate_division_OP11    56
+# ℹ 33 more rows</code></pre>
+</div>
+</div>
+<p>We filter out the uncommon phyla in each sample with the <em>filter</em> command. The resulting data set has fewer rows (333 instead of 2408).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>erie_phylum <span class="ot">&lt;-</span> erie_phylum <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Rel_Abundance <span class="sc">&gt;</span> <span class="fl">0.02</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>erie_phylum</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 333 × 4
+# Groups:   SampleID [56]
+   SampleID  Phylum          Abundance Rel_Abundance
+   &lt;chr&gt;     &lt;chr&gt;               &lt;int&gt;         &lt;dbl&gt;
+ 1 E0010_CNA Actinobacteria      12128        0.424 
+ 2 E0010_CNA Bacteroidetes        9020        0.316 
+ 3 E0010_CNA Proteobacteria       5953        0.208 
+ 4 E0010_CNA Verrucomicrobia       798        0.0279
+ 5 E0012_CNA Actinobacteria       9173        0.383 
+ 6 E0012_CNA Bacteroidetes        7269        0.303 
+ 7 E0012_CNA Cyanobacteria         835        0.0348
+ 8 E0012_CNA Proteobacteria       4490        0.187 
+ 9 E0012_CNA Verrucomicrobia      1277        0.0533
+10 E0014_CNA Actinobacteria       9083        0.362 
+# ℹ 323 more rows</code></pre>
+</div>
+</div>
+<p>Have any phyla been removed from the data altogether? Let’s count the remaining phyla. Only 8 remain! The table shows how many samples they appear in (there are 56 samples).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>erie_phylum <span class="sc">%&gt;%</span> ungroup <span class="sc">%&gt;%</span> <span class="fu">count</span>(Phylum)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 2
+  Phylum              n
+  &lt;chr&gt;           &lt;int&gt;
+1 Actinobacteria     56
+2 Armatimonadetes     2
+3 Bacteroidetes      56
+4 Chlorobi           11
+5 Cyanobacteria      50
+6 Planctomycetes     46
+7 Proteobacteria     56
+8 Verrucomicrobia    56</code></pre>
+</div>
+</div>
+<p>Let’s export the aggregated and filtered data so that we can use it later without repeating the computations we have done. We’ll save an ungrouped version of the data so that we don’t have to remember about the groups structure later.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>erie_phylum <span class="sc">%&gt;%</span> ungroup <span class="sc">%&gt;%</span> </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(<span class="st">"clean_data/erie_phylum.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="joining-the-sample-data-with-the-metadata" class="level2">
+<h2 class="anchored" data-anchor-id="joining-the-sample-data-with-the-metadata">Joining the sample data with the metadata</h2>
+<p>Now we can join the the sample data with the metadata, which has information we will want to incorporate in our plot. In particular, we would like to see how relative abundance changes over time at each sample site. Thus, we need to know when each sample was collected and which site it was collected at. This information is in the metadata. We use a <em>join</em> command like we did earlier. We want to add information from the metadata to the <em>erie_phylum</em> data, so we perform the join in a way that will preserve the rows of the <em>erie_phylum</em> data. The data will be joined by the columns they have in common (in this case, just <em>SampleID</em>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>erie_joined <span class="ot">&lt;-</span> erie_phylum <span class="sc">%&gt;%</span> </span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(erie_meta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(SampleID)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>erie_joined</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 333 × 36
+# Groups:   SampleID [56]
+   SampleID  Phylum    Abundance Rel_Abundance Date       Station Shore Fraction
+   &lt;chr&gt;     &lt;chr&gt;         &lt;int&gt;         &lt;dbl&gt; &lt;date&gt;     &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;   
+ 1 E0010_CNA Actinoba…     12128        0.424  2014-06-16 nearsh… near… CNA     
+ 2 E0010_CNA Bacteroi…      9020        0.316  2014-06-16 nearsh… near… CNA     
+ 3 E0010_CNA Proteoba…      5953        0.208  2014-06-16 nearsh… near… CNA     
+ 4 E0010_CNA Verrucom…       798        0.0279 2014-06-16 nearsh… near… CNA     
+ 5 E0012_CNA Actinoba…      9173        0.383  2014-06-16 nearsh… near… CNA     
+ 6 E0012_CNA Bacteroi…      7269        0.303  2014-06-16 nearsh… near… CNA     
+ 7 E0012_CNA Cyanobac…       835        0.0348 2014-06-16 nearsh… near… CNA     
+ 8 E0012_CNA Proteoba…      4490        0.187  2014-06-16 nearsh… near… CNA     
+ 9 E0012_CNA Verrucom…      1277        0.0533 2014-06-16 nearsh… near… CNA     
+10 E0014_CNA Actinoba…      9083        0.362  2014-06-16 offsho… offs… CNA     
+# ℹ 323 more rows
+# ℹ 28 more variables: Type &lt;chr&gt;, Samplenum &lt;chr&gt;, Date_year &lt;chr&gt;,
+#   Month &lt;chr&gt;, Days &lt;dbl&gt;, pH &lt;dbl&gt;, SpCond &lt;dbl&gt;, StationDepth &lt;dbl&gt;,
+#   Secchi &lt;dbl&gt;, Temp &lt;dbl&gt;, Turbidity &lt;dbl&gt;, ParMC &lt;dbl&gt;, DissMC &lt;dbl&gt;,
+#   Phycocyanin &lt;dbl&gt;, Chla &lt;dbl&gt;, DOC &lt;dbl&gt;, SRP &lt;dbl&gt;, TP &lt;dbl&gt;, TDP &lt;dbl&gt;,
+#   POC &lt;dbl&gt;, PON &lt;dbl&gt;, PP &lt;dbl&gt;, N.P &lt;dbl&gt;, Nitrate &lt;dbl&gt;, Ammonia &lt;dbl&gt;,
+#   H2O2 &lt;dbl&gt;, CDOM &lt;dbl&gt;, sequencingDepth &lt;int&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="relative-abundance-stacked-bar-plots" class="level2">
+<h2 class="anchored" data-anchor-id="relative-abundance-stacked-bar-plots">Relative abundance stacked bar plots</h2>
+<p>Before we do any plotting, we will specify the colors that we will use to represent the phyla. We will use the colors from Michelle Berry’s Phyloseq tutorial. There are 16 colors, but we will only use 8 (one color per phylum).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>phylum_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"#CBD588"</span>, <span class="st">"#5F7FC7"</span>, <span class="st">"orange"</span>,<span class="st">"#DA5724"</span>, <span class="st">"#508578"</span>, <span class="st">"#CD9BCD"</span>,</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>   <span class="st">"#AD6F3B"</span>, <span class="st">"#673770"</span>,<span class="st">"#D14285"</span>, <span class="st">"#652926"</span>, <span class="st">"#C84248"</span>, </span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"#8569D5"</span>, <span class="st">"#5E738F"</span>,<span class="st">"#D1A33D"</span>, <span class="st">"#8A7C64"</span>, <span class="st">"#599861"</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We will construct two versions of the plot. In both cases we will plot relative abundance on the <em>y</em> axis and date on the <em>x</em> axis. In the first case we will plot the dates in such a way that they occur at the correct relative position on the <em>x</em> axis. This shows the irregularity in the sample collection–larger white spaces between bars reflect longer intervals between samples. In the second case, we will have the same amount of white space between each bar, allowing us to focus more on the varition in relative abundance.</p>
+<p>The structure of the ggplot command is familiar. We use <em>Phylum</em> to determine the fill color within each bar. <em>geom_bar</em> adds the bars to the plot. The <em>facet_grid</em> command tells R to break the plot into a grid of vertically arranged subplots with one subplot per <em>Station</em>. The rest of the code determines how the plot will look, including specifying that we want to use colors from the <em>phylum_colors</em> vector.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(erie_joined, <span class="fu">aes</span>(<span class="at">x =</span> Date, <span class="at">y =</span> Rel_Abundance, <span class="at">fill =</span> Phylum)) <span class="sc">+</span> </span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(Station<span class="sc">~</span>.) <span class="sc">+</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> phylum_colors) <span class="sc">+</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove x axis title</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span> </span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="fu">guide_legend</span>(<span class="at">reverse =</span> <span class="cn">FALSE</span>, <span class="at">keywidth =</span> <span class="dv">1</span>, <span class="at">keyheight =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Relative Abundance (Phyla &gt; 2%) </span><span class="sc">\n</span><span class="st">"</span>) <span class="sc">+</span></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Phylum Composition of Lake Erie </span><span class="sc">\n</span><span class="st"> Bacterial Communities by Sampling Site"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>For the second version, we treat date as a character (instead of a date) so that there is not irregular spacing between bars that results from irregular sampling intervals.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(erie_joined, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">format</span>(Date, <span class="st">"%m/%d"</span>), <span class="at">y =</span> Rel_Abundance, <span class="at">fill =</span> Phylum)) <span class="sc">+</span> </span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(Station<span class="sc">~</span>.) <span class="sc">+</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> phylum_colors) <span class="sc">+</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="st">"07/08"</span>, <span class="st">"08/04"</span>, <span class="st">"09/02"</span>, <span class="st">"10/06"</span>),</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Jul"</span>, <span class="st">"Aug"</span>, <span class="st">"Sep"</span>, <span class="st">"Oct"</span>),</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">drop =</span> <span class="cn">FALSE</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove x axis title</span></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span> </span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="fu">guide_legend</span>(<span class="at">reverse =</span> <span class="cn">FALSE</span>, <span class="at">keywidth =</span> <span class="dv">1</span>, <span class="at">keyheight =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Relative Abundance (Phyla &gt; 2%) </span><span class="sc">\n</span><span class="st">"</span>) <span class="sc">+</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Phylum Composition of Lake Erie </span><span class="sc">\n</span><span class="st"> Bacterial Communities by Sampling Site"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="050_Erie_Data_Rel_Abund_Stacked_Bar_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="saving-the-plot" class="level3">
+<h3 class="anchored" data-anchor-id="saving-the-plot">Saving the plot</h3>
+<p>Let’s save the second version of the plot so that we can easily refer to it later. We will save it in the <em>outputs</em> subdirectory of the <em>watershedErie</em> directory, since it is an ouput. We will save the plot as a pdf file using the ggsave command. After you save the plot open it up and see what it looks like.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">'outputs/Erie_Phylum_relativeAbundance_stackedBar.pdf'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

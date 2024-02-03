@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Introduction to importing data, plotting with ggplot, and statistical tests</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="030_Intro_Import_Plot_Test_files/libs/clipboard/clipboard.min.js"></script>
+<script src="030_Intro_Import_Plot_Test_files/libs/quarto-html/quarto.js"></script>
+<script src="030_Intro_Import_Plot_Test_files/libs/quarto-html/popper.min.js"></script>
+<script src="030_Intro_Import_Plot_Test_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="030_Intro_Import_Plot_Test_files/libs/quarto-html/anchor.min.js"></script>
+<link href="030_Intro_Import_Plot_Test_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="030_Intro_Import_Plot_Test_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="030_Intro_Import_Plot_Test_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="030_Intro_Import_Plot_Test_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="030_Intro_Import_Plot_Test_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+<script src="030_Intro_Import_Plot_Test_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="030_Intro_Import_Plot_Test_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Introduction to importing data, plotting with ggplot, and statistical tests</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial we will start to learn how to do some of the most common tasks that you will perform in R. We will learn how to import a dataset from a csv file, we will perform some simple statistical tests, and we will use ggplot to produce some nice plots.</p>
+<p>The document you are reading is a rendered Quarto document, which you should now understand how to create. As you work through this tutorial and others you should be working inside of your own Quarto document (a new one for each tutorial). Your document should have concise headings and text (including an introduction) that are sufficient to help you understand your work when you look back at it later. Your headings and explanatory text should not simply mimic mine, since the purposes of our documents are different. Your code blocks should include the code presented in the tutorial, but it can also include your own explorations and comments as you, for example, play with things like plotting options.</p>
+<p>While we are working on tutorials that are aimed at introducing you to R you should continue to work within the project that you set up in tutorial 2 (<em>watershed_R_Intro</em>). That means your next step (if you have not already done so) is to open that project and create a new Quarto document file for your work on this tutorial. Give your file an informative name (with no spaces or special characters except dashes and underscores).</p>
+<section id="artic-sea-ice-extent" class="level3">
+<h3 class="anchored" data-anchor-id="artic-sea-ice-extent">Artic Sea Ice Extent</h3>
+<p>Sea ice in the arctic typically reaches its minimum extent in September each year. Sea ice extent is defined to be the total area covered that has an ice concentration of at least 15%. NASA has been been using satellites to monitor the sea ice extent in the Arctic since 1978. <a href="https://www.nasa.gov/feature/esnt/2021/nasa-finds-2021-arctic-summer-sea-ice-12th-lowest-on-record">This NASA website</a> discusses the 2021 minimum sea ice extent. It includes a nice animation showing the decline in sea ice over time. Please read the web page and watch the animation.</p>
+<p>We will explore the NASA data set, which lists the annual minimum sea ice extent (in millions of square kilometers) since 1979.</p>
+</section>
+</section>
+<section id="importing-data-from-a-csv-file" class="level2">
+<h2 class="anchored" data-anchor-id="importing-data-from-a-csv-file">Importing data from a csv file</h2>
+<p>A csv file contains data in a plain text format with columns separated by commas (csv = comma separated values). You can easily export a csv file from Microsoft Excel or Google Sheets, or you can create one yourself using a text editor. It is also simple to export one from R.</p>
+<section id="putting-your-csv-file-in-the-right-directory" class="level3">
+<h3 class="anchored" data-anchor-id="putting-your-csv-file-in-the-right-directory">Putting your csv file in the right directory</h3>
+<p>Remember that we have adopted a standard directory structure for our R projects. We put our code in the <em>code</em> folder, and we put our data in data folders. If we are importing a data set from outside of our project, we will consider it raw data and we will put it in the <em>raw_data</em> folder.</p>
+<p>The data we will work with in this tutorial is in the <em>2485_Sept_Arctic_extent_1979-2021.csv</em> file on the course Moodle page. Download the file and move it into the <em>raw_data</em> directory in your <em>watershed_R_Intro</em> project directory.</p>
+<p>You should open the file with Microsoft Excel and then with a text editor (like <em>textEdit</em> on a Mac or <em>Notepad</em> or <em>WordPad</em> on a Windows computer) so that you understand the structure and formate of the data. R ‘sees’ the version that your text editor shows you (or something similar).</p>
+</section>
+<section id="importing-the-data-into-r-and-viewing-it" class="level3">
+<h3 class="anchored" data-anchor-id="importing-the-data-into-r-and-viewing-it">Importing the data into R and viewing it</h3>
+<p>We will use the <em>read_csv</em> function to import the data from the csv file. This function is included in the <em>readr</em> package that is included in the <em>tidyverse</em> package we installed in the last tutorial. In order to use the function, we first need to load the <em>tidyverse</em> package. We do this with the <em>library</em> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.3     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+</div>
+<p>Note that the preceding code block was generated with the code</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)                            </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>so you will need to write this in your own Quarto document. The output that follows the code block was generated when the document was rendered (as the code was executed). From this point on I will assume that you realize that you need to start your R code blocks with <code>```{r}</code> and end them with <code>```</code> as we discussed in tutorial 2, and that you can identify R code blocks and output throughout this document.</p>
+<p>Let’s import the data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ice_extent <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"raw_data/2485_Sept_Arctic_extent_1979-2021.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>New names:
+Rows: 43 Columns: 8
+── Column specification
+──────────────────────────────────────────────────────── Delimiter: "," chr
+(2): data-type, hemisphere dbl (6): ...1, year, month, extent, area, rank
+ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+Specify the column types or set `show_col_types = FALSE` to quiet this message.
+• `` -&gt; `...1`</code></pre>
+</div>
+</div>
+<p>When we read in the data, we give it the name <em>ice_extent</em> so that we can refer to it later. We tell the <em>read_csv</em> function where to find the file by providing it with the path to the file. Here we are using a <em>relative path</em> that should work on your computer if you have set up the project directory structure correctly and have included the appropriate line in the *_quarto.yml* file. That line tells R to treat the <em>watershed_R_Intro</em> project directory as the root directory, so that we can just refer to the file’s location using that directory as our starting point. Within that directory the file is in the <em>raw_data</em> directory, so we specify the path starting with the <em>raw_data</em> directory.</p>
+<p>The code we use to import the data is pretty simple because the data set is itself very simple. For more complicated data we often need to give the <em>read_csv</em> function additional information in order to have it read the data in correctly. Don’t forget that you can get help using the <em>read_csv</em> function by entering <code>?read_csv</code> into the R console.</p>
+<p>Let’s look at the <em>ice_extent</em> object we created. As we learned in tutorial 1, we can get R to print information about the object by simply typing its name (and running the code by rendering the document).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ice_extent</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 43 × 8
+    ...1  year month `data-type` hemisphere extent  area  rank
+   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1     0  1979     9 Goddard     N            7.05  4.58  33  
+ 2     1  1980     9 Goddard     N            7.67  4.87  43  
+ 3     2  1981     9 Goddard     N            7.14  4.44  34.5
+ 4     3  1982     9 Goddard     N            7.3   4.43  37  
+ 5     4  1983     9 Goddard     N            7.39  4.7   39  
+ 6     5  1984     9 Goddard     N            6.81  4.11  31  
+ 7     6  1985     9 Goddard     N            6.7   4.23  29  
+ 8     7  1986     9 Goddard     N            7.41  4.72  40  
+ 9     8  1987     9 Goddard     N            7.28  5.64  36  
+10     9  1988     9 Goddard     N            7.37  5.36  38  
+# ℹ 33 more rows</code></pre>
+</div>
+</div>
+<p>The data we imported are organized into a <em>tibble</em>, which is a type of data frame. R prints information about the tibble in a nice, easy-to-read manner. It tells us the size of the tibble (43 rows, 8 columns), corresponding with the 43 years and 8 variables in the data set. The names of the variables are printed at the tops of the columns. For example, the <em>extent</em> variable is the minimum Arctic sea ice extent in millions of square kilometers. Under the variable name R prints the data type for each variable. <char> stands for character (text) data, <dbl> stands for double (a way to represent numeric data).</dbl></char></p>
+<p>R only prints the first 10 rows of the tibble so that we do not clutter up the screen. Often this is sufficient to understand the nature of the tibble. R will also only print out a limited number of columns. In this case they are all shown, because we don’t have many variables. If there are columns that are not printed, the corresponding variable names and data types will be listed at the bottom of the print out.</p>
+<p>We can view just the first few rows of the data set using the <em>head</em> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ice_extent, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 8
+   ...1  year month `data-type` hemisphere extent  area  rank
+  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1     0  1979     9 Goddard     N            7.05  4.58  33  
+2     1  1980     9 Goddard     N            7.67  4.87  43  
+3     2  1981     9 Goddard     N            7.14  4.44  34.5</code></pre>
+</div>
+</div>
+<p>Here, we have asked the head command to show us the first 3 rows of the <em>ice_extent object</em>. An alternative way to do the same thing is to use a pipe. Pipes structure your code to emphasize how data are flowing through a set of commands, and we will use them often in our code. Here is a version using a pipe (%&gt;%).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ice_extent <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 8
+   ...1  year month `data-type` hemisphere extent  area  rank
+  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1     0  1979     9 Goddard     N            7.05  4.58  33  
+2     1  1980     9 Goddard     N            7.67  4.87  43  
+3     2  1981     9 Goddard     N            7.14  4.44  34.5</code></pre>
+</div>
+</div>
+<p>This does <em>exactly</em> the same thing as the first method. When a pipe is used the object on the left of the pipe (<em>ice_extent</em>) gets placed into the first argument of the function on the left (<em>head</em>). That is, it gets placed where the dot is in this command <code>head(., 3)</code>. Essentially the first argument is hidden (and handled) by the pipe. The advantage of the pipe is that the code looks like how we might think about what is occuring–‘we start with <em>ice_extent</em> data and then print out the first 3 rows’. Pipes become especially useful when we chain multiple commands together.</p>
+<p>We can also look at the last several rows of the data using the <em>tail</em> command. Here is a version that uses a pipe.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>ice_extent <span class="sc">%&gt;%</span> <span class="fu">tail</span>(<span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 8
+   ...1  year month `data-type` hemisphere extent  area  rank
+  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1    38  2017     9 Goddard     N            4.82  3.35    10
+2    39  2018     9 Goddard     N            4.79  3.35     9
+3    40  2019     9 Goddard     N            4.36  3.17     4
+4    41  2020     9 Goddard     N            4     2.83     2
+5    42  2021     9 NRTSI-G     N            4.92  3.43    12</code></pre>
+</div>
+</div>
+<p>Which rows will the this command reveal?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>ice_extent <span class="sc">%&gt;%</span> <span class="fu">tail</span>(<span class="dv">8</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 8
+   ...1  year month `data-type` hemisphere extent  area  rank
+  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1    35  2014     9 Goddard     N            5.22  3.74    14
+2    36  2015     9 Goddard     N            4.62  3.42     7</code></pre>
+</div>
+</div>
+<p>This command first pulls the last 8 rows of <em>ice_extent</em> using <em>tail</em> (rows 36-43), then it passes those to <em>head</em> which pulls the first two of those rows. Thus, we are looking at rows 36 and 37 of the <em>ice_extent</em> data.</p>
+<p>Another way to format the last command is to take advantage of R’s ability to realize that a command is incomplete and to wait for it to be completed (as we saw in Tutorial 1). With this in mind we can reformat the code as</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>ice_extent <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tail</span>(<span class="dv">8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 8
+   ...1  year month `data-type` hemisphere extent  area  rank
+  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1    35  2014     9 Goddard     N            5.22  3.74    14
+2    36  2015     9 Goddard     N            4.62  3.42     7</code></pre>
+</div>
+</div>
+<p>At the end of the first line, R realizes that the statement is incomplete (there is a pipe that doesn’t lead to anything), so it goes to the next line to complete the statement. It does something similar on at the end of the second line.</p>
+<p>What if we want to look at row 23? Do we have to use <em>tail</em> and <em>head</em>? No.&nbsp;We can also refer to rows by number. Specific elements in a tibble can be referred to by their row and column numbers in square brackets. For example, the following code returns a tibble with a single element in it–the data in the row 23 and column 4.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>ice_extent[<span class="dv">23</span>,<span class="dv">4</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  `data-type`
+  &lt;chr&gt;      
+1 Goddard    </code></pre>
+</div>
+</div>
+<p>We can pick out the entire 23rd row by leaving out the column number (but keeping the comma). This tells R we want all of the columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>ice_extent[<span class="dv">23</span>,]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 8
+   ...1  year month `data-type` hemisphere extent  area  rank
+  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1    22  2001     9 Goddard     N            6.73  4.59    30</code></pre>
+</div>
+</div>
+<p>Try the commands <code>ice_extent[23:25,]</code>, <code>ice_extent[c(2,4,6,8),]</code>, and <code>ice_extent %&gt;% pull(area)</code>. What do they do?</p>
+<p>Sometimes we want to view and scroll through the entire data set. Do we have to go to Excel to do this? No! RStudio has a handy data viewer built into it. You can view the data by finding the <em>ice_extent</em> object in the <em>Environment</em> tab and clicking on its name. Try it out!</p>
+</section>
+</section>
+<section id="plotting-the-data-using-ggplot" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-the-data-using-ggplot">Plotting the data using ggplot</h2>
+<p>You have already seen how to plot data using the <em>plot</em> function in base R. This is useful for making quick plots, but we can often make much nicer plots using the tools in the <em>ggplot2</em> package. This is another package that is part of the <em>tidyverse</em> package. Since we already loaded that package we do not need to do it again.</p>
+<p>The structure of the code to build a <em>ggplot</em> plot is more complicated than using the base <em>plot</em> command, and it takes some time to understand the structure. At first it may look like it is not worth it, but we will appreciate the flexibility later (and in particular how easy it is to make complicated plots that look good).</p>
+<p>Let’s make a scatter plot of the data (extent vs.&nbsp;year).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> ice_extent, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> extent)) <span class="sc">+</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Ice Extent (million square km)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="030_Intro_Import_Plot_Test_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>ggplot builds a plot one element at a time, starting with an empty plot. The empty plot is initialized with the <em>ggplot</em> command at the top. Additional elements like points and labels are then added to the plot one at a time using a <em>+</em>. When we run the code, R understands there is more to do after each line that ends with a <em>+</em> (it recognizes the incomplete command and looks to the next line).</p>
+<p>When we call the <em>ggplot</em> command, we give R some information about the plot we want to build. Later elements inherit this information as needed. The first thing we tell R about the plot is simply that the data will come from the <em>ice_extent</em> object. The second piece of information we give to R is a bit more complicated. We are providing it with a <em>mapping</em> for the plot. The mapping is always an <em>aes</em> object (short for aesthetic), because it affects how the plot will appear. Within this we are telling R to think of <em>year</em> as our <em>x</em> variable and <em>extent</em> as our <em>y</em> variable. Note that these must exactly match the names of the corresponding variables in the <em>ice_extent</em> tibble.</p>
+<p>The <em>geom_point</em> command tells R to add points to the plot. We don’t need to tell R anything about how to determine the coordinates of the points, because that information is inherited from the information we provided the <em>ggplot</em> command.</p>
+<p>The last two elements are our <em>x</em> and <em>y</em> labels.</p>
+<p>With this structure, we can very easily modify or add plot elements. For example, we can add a regression line using the <em>geom_smooth</em> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> ice_extent, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> extent)) <span class="sc">+</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">'lm'</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Ice Extent (million square km)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="030_Intro_Import_Plot_Test_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Inside of the <em>geom_smooth</em> command we specify that it should use the ‘lm’ method (a line), and that it should not show confidence intervals around the line (se = FALSE).</p>
+<p>We can easily change the appearance of our plot in ggplot. Here is a simple example.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> ice_extent, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> year, <span class="at">y =</span> extent)) <span class="sc">+</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">'lm'</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Year"</span>) <span class="sc">+</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Ice Extent (million square km)"</span>) <span class="sc">+</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="030_Intro_Import_Plot_Test_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="linear-regression-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="linear-regression-analysis">Linear regression analysis</h2>
+<p>We can fit a regression line to the data and determine if there is a statistically significant correlation between ice extent and year using the <em>lm</em> command in R. It is possible to run a Pearson’s correlation test separately using the <em>cor.test</em> command. The <em>lm</em> command runs a significance test using the slope instead of the correlation, but the two tests are equivalent so I tend to just use <em>lm</em>.</p>
+<p>To fit a linear model using the lm function we can use the following code.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>lm_extent <span class="ot">&lt;-</span> <span class="fu">lm</span>(extent <span class="sc">~</span> year, <span class="at">data =</span> ice_extent)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Give the model a name <em>lm_extent</em> so we can refer to it later. The first argument of the <em>lm</em> function is a formula. The formula<code>extent ~ year</code> has the form <code>y ~ x</code>. It tells R that we want to fit a linear model for the <em>extent</em> variable in terms of the <em>year</em> variable. That is, we are treating <em>extent</em> as our <em>y</em> variable and <em>year</em> as our <em>x</em> variable. We also tell the <em>lm</em> command that the data are in the <em>ice_extent</em> tibble.</p>
+<p>We can get some information about the linear model by just typing <em>lm_extent</em>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>lm_extent</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = extent ~ year, data = ice_extent)
+
+Coefficients:
+(Intercept)         year  
+  168.43988     -0.08122  </code></pre>
+</div>
+</div>
+<p>The print out tells us how we set up the model, and it gives us the model coefficients. This tells us that the equation for the regression line is <span class="math display">\[\text{extent} = -0.08122\cdot \text{year} + 168.43988\]</span></p>
+<p>Thus, the slope is -0.08122, telling us that each year, the ice extent is predicted to decrease by 81,220 <span class="math inline">\(km^2\)</span>.</p>
+<p>Note that this is the same regression line that we added to the scatter plot above using <em>geom_smooth</em> (remember we told R to use method ‘lm’).</p>
+<p>We can get even more information about the linear model if we ask R for a summary of the model using the <em>summary</em> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>lm_extent <span class="sc">%&gt;%</span> <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = extent ~ year, data = ice_extent)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1.44881 -0.31543  0.01572  0.33263  1.26162 
+
+Coefficients:
+              Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 168.439879  12.943523   13.01 3.80e-16 ***
+year         -0.081223   0.006472  -12.55 1.25e-15 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.5266 on 41 degrees of freedom
+Multiple R-squared:  0.7935,    Adjusted R-squared:  0.7884 
+F-statistic: 157.5 on 1 and 41 DF,  p-value: 1.252e-15</code></pre>
+</div>
+</div>
+<p>The same coefficients as before are listed in the <em>Coefficients</em> table in the summary (in the <em>Estimate</em> column). However, this time p-values are listed for the coefficients (in the <em>Pr(&gt;|t|))</em> column). We are particularly interested in the p-value for the slope (the coefficient for <em>year</em>). This is the same p-value that we would obtain from a correlation test.</p>
+<p>Since the p-value is very small (essentially 0), the test is significant, and there is very strong evidence of a linear association between ice extent and year.</p>
+<p>The summary also tells us that <span class="math inline">\(R^2 = 0.7884\)</span>. Thus about 79% of the variability in ice extent is explained by its linear relationship with year.</p>
+<p>As with many things in R, there are multiple ways to extract what we need from the analysis.</p>
+<p>Here is a ‘tidier’ way to get the information that makes heavier use of pipes and the <em>tidy</em> function from the <em>broom</em> package. This function puts the information from the <em>Coefficients</em> table into a nicer format (a tibble). The results are easy to read and extract information from using commands. Although the <em>broom</em> package is considered part of the <em>Tidyverse</em> it is not loaded when the <em>tidyverse</em> package is loaded, so we need to load it with the <em>library</em> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>lm_tib <span class="ot">&lt;-</span> ice_extent <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lm</span>(extent <span class="sc">~</span> year, <span class="at">data =</span> .) <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>lm_tib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 5
+  term        estimate std.error statistic  p.value
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+1 (Intercept) 168.      12.9          13.0 3.80e-16
+2 year         -0.0812   0.00647     -12.6 1.25e-15</code></pre>
+</div>
+</div>
+<p>Often we will want to change the format of a printed table in R. Often the default printed output will have more or fewer decimal places than we want to show. We may also want to control the appearance of the table in other ways. The <em>kableExtra</em> package includes tools for formatting tables in R output, including rendered html files.</p>
+<p>The <em>kbl</em> function does most of the work for us. This is what the table looks like if we format it with the <em>kbl</em> function using default values for options.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>lm_tib <span class="sc">|&gt;</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">168.4398792</td>
+<td style="text-align: right;">12.9435225</td>
+<td style="text-align: right;">13.01345</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">year</td>
+<td style="text-align: right;">-0.0812232</td>
+<td style="text-align: right;">0.0064716</td>
+<td style="text-align: right;">-12.55064</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>We can easily specify the number of digits for numeric columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>lm_tib <span class="sc">|&gt;</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">digits =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">term</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">estimate</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">std.error</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">168.440</td>
+<td style="text-align: right;">12.944</td>
+<td style="text-align: right;">13.013</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">year</td>
+<td style="text-align: right;">-0.081</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">-12.551</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>Checkout the documentation for the <em>kbl</em> function to learn more about it (<code>?kbl</code>).</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

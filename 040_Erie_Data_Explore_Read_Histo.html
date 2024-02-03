@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Exploring Lake Erie Microbiome Data</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="040_Erie_Data_Explore_Read_Histo_files/libs/clipboard/clipboard.min.js"></script>
+<script src="040_Erie_Data_Explore_Read_Histo_files/libs/quarto-html/quarto.js"></script>
+<script src="040_Erie_Data_Explore_Read_Histo_files/libs/quarto-html/popper.min.js"></script>
+<script src="040_Erie_Data_Explore_Read_Histo_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="040_Erie_Data_Explore_Read_Histo_files/libs/quarto-html/anchor.min.js"></script>
+<link href="040_Erie_Data_Explore_Read_Histo_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="040_Erie_Data_Explore_Read_Histo_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="040_Erie_Data_Explore_Read_Histo_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="040_Erie_Data_Explore_Read_Histo_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="040_Erie_Data_Explore_Read_Histo_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Exploring Lake Erie Microbiome Data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this tutorial we will begin to explore a microbiome data set from Lake Erie. This is a smaller data set than the Macatawa watershed data set, but it has a similar structure. Thus it is a convenient data set to use to learn about techniques that we can later apply to exploring and analyzing the Macatawa watershed data. As we explore the Erie data set we will also <em>clean</em> it to make it more useful for future computations.</p>
+<p>The data set is composed of three files. The metadata file contains information about water samples, including when and where the samples were collected and physical measurements associated with the samples. The shared file contains information about how many times different groups of bacteria are identified within the samples. The taxonomy file associates taxonomic information with each bacterial group identified in the shared file. We will explore each of these files in turn.</p>
+<p>The Lake Erie data are described by <a href="https://sfamjournals.onlinelibrary.wiley.com/doi/abs/10.1111/1462-2920.13640?campaign=wolacceptedarticle">Berry et al.&nbsp;(2016)</a>. The purpose of the Lake Erie study was to understand how bacteria communities change during cyanobacterial harmful algal blooms (CHABs).</p>
+<p>The data that we will use in this tutorial can be accessed from a <a href="https://github.com/DenefLab/chab-microbial-ecology">github repository</a>, but we have posted copies of the files on our course Moodle page for convenience.</p>
+<p>This data set is also used in <a href="http://deneflab.github.io/MicrobeMiseq/demos/mothur_2_phyloseq.html#unconstrained_ordinations">Michelle Berry’s Phyloseq tutorial</a>. In this and the next few tutorials, we will be essentially following the workflow from Michelle Berry’s tutorial, but avoiding actually using Phyloseq.</p>
+</section>
+<section id="project-setup-and-downloading-the-erie-data" class="level2">
+<h2 class="anchored" data-anchor-id="project-setup-and-downloading-the-erie-data">Project setup and downloading the Erie data</h2>
+<p>We will start by setting up a new Quarto project for this tutorial and the other tutorials you will complete using the Lake Erie data. You learned how to set up a project, including the standard directory structure we will use, in Tutorial 2. Create a new project in RStudio called <em>watershedErie</em>. Don’t forget you need to create the following subdirectories in your <em>watershedErie</em> directory: (code, raw_data, clean_data, outputs). Also remember to modify the *_quarto.yml* file so that the project directory is the working directory when executing code.</p>
+<p>Download the following files from the course Moodle page, and move them into your <em>raw_data</em> subdirectory of your <em>watershedErie</em> directory:</p>
+<ul>
+<li><em>chabs-silva.taxonomy</em></li>
+<li><em>chabs.shared</em></li>
+<li><em>habs_metadata_cleaned.csv</em></li>
+</ul>
+</section>
+<section id="your-quarto-document" class="level2">
+<h2 class="anchored" data-anchor-id="your-quarto-document">Your Quarto document</h2>
+<p>Create a new Quarto document for this tutorial, give it an informative name (it should relate to what we are doing in the totorial – exploring the Lake Erie data), and save it in the <em>code</em> subdirectory of your <em>watershedErie</em> directory.</p>
+<p>As you work through this tutorial, transcribe the code into your own document and run it. Make sure you also write about what you are doing so that you can understand your work when you read it later.</p>
+<p>Don’t forget make the necessary changes in the setup section at the top of the Quarto document. These are described in tutorial 2.</p>
+<p>Let’s start by cleaning up our work space and loading the required packages.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>())</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          used (Mb) gc trigger (Mb) limit (Mb) max used (Mb)
+Ncells  579972 31.0    1322341 70.7         NA   669442 35.8
+Vcells 1072753  8.2    8388608 64.0     102400  1851753 14.2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.3     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vroom)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'vroom'
+
+The following objects are masked from 'package:readr':
+
+    as.col_spec, col_character, col_date, col_datetime, col_double,
+    col_factor, col_guess, col_integer, col_logical, col_number,
+    col_skip, col_time, cols, cols_condense, cols_only, date_names,
+    date_names_lang, date_names_langs, default_locale, fwf_cols,
+    fwf_empty, fwf_positions, fwf_widths, locale, output_column,
+    problems, spec</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="the-erie-metadata" class="level2">
+<h2 class="anchored" data-anchor-id="the-erie-metadata">The Erie metadata</h2>
+<p>The first file that we will import from the Lake Erie data set is the one containing the <em>metadata</em>. There were multiple water samples collected for the project. The metadata file has a row for each sample and a column for each variable in the metadata. These include things like the <em>SampleID</em> (a label that uniquely identifies each sample), the date that the sample was collected, various physical and chemical meausurements, etc.</p>
+<p>We will use the <em>read_csv</em> command like we did in Tutorial 3. This time we surround the whole command in an extra set of parentheses. This is a shortcut to get R to execute the command <em>and</em> display the results. We also provide the command with the additional argument <em>col_types</em>. This allows us to specify the data type for each column. Here, <em>c</em> denotes character, <em>T</em> is for datetime, and <em>d</em> is for double (a numeric data type).</p>
+<p>After you run the code, look at the variables using the viewer in RStudio by clicking on the name of the <em>erie_meta</em> object in the Environment tab. Are any of the variables similar to the ones in the Macatawa watershed metadata that you worked with last semester?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># you will need different column types for the watershed metadata"</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>col_types <span class="ot">=</span> <span class="st">"cccccccccddddddddddddddddddddddd"</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>(erie_meta <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"raw_data/habs_metadata_cleaned.csv"</span>, <span class="at">col_types =</span> col_types))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 56 × 32
+   SampleID  Date  Station  Shore Fraction Type  Samplenum Date_year Month  Days
+   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt; &lt;dbl&gt;
+ 1 E0010_CNA 6/16  nearsho… near… CNA      samp… E0010     6/16/14   June     20
+ 2 E0012_CNA 6/16  nearsho… near… CNA      samp… E0012     6/16/14   June     20
+ 3 E0014_CNA 6/16  offshore offs… CNA      samp… E0014     6/16/14   June     20
+ 4 E0016_CNA 6/30  nearsho… near… CNA      samp… E0016     6/30/14   June     34
+ 5 E0018_CNA 6/30  nearsho… near… CNA      samp… E0018     6/30/14   June     34
+ 6 E0020_CNA 6/30  offshore offs… CNA      samp… E0020     6/30/14   June     34
+ 7 E0022_CNA 7/8   nearsho… near… CNA      samp… E0022     7/8/14    July     42
+ 8 E0024_CNA 7/8   nearsho… near… CNA      samp… E0024     7/8/14    July     42
+ 9 E0026_CNA 7/8   offshore offs… CNA      samp… E0026     7/8/14    July     42
+10 E0028_CNA 7/14  nearsho… near… CNA      samp… E0028     7/14/14   July     48
+# ℹ 46 more rows
+# ℹ 22 more variables: pH &lt;dbl&gt;, SpCond &lt;dbl&gt;, StationDepth &lt;dbl&gt;,
+#   Secchi &lt;dbl&gt;, Temp &lt;dbl&gt;, Turbidity &lt;dbl&gt;, ParMC &lt;dbl&gt;, DissMC &lt;dbl&gt;,
+#   Phycocyanin &lt;dbl&gt;, Chla &lt;dbl&gt;, DOC &lt;dbl&gt;, SRP &lt;dbl&gt;, TP &lt;dbl&gt;, TDP &lt;dbl&gt;,
+#   POC &lt;dbl&gt;, PON &lt;dbl&gt;, PP &lt;dbl&gt;, N.P &lt;dbl&gt;, Nitrate &lt;dbl&gt;, Ammonia &lt;dbl&gt;,
+#   H2O2 &lt;dbl&gt;, CDOM &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>We can see that there are 56 samples listed in the metadata and 32 variables. We will focus on four of the variables that will be important for our analysis. These are summarized in the following table.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SampleID</td>
+<td>Unique ID for each sample. Has the form E####_CNA</td>
+</tr>
+<tr class="even">
+<td>Date_year</td>
+<td>Has the form Month/Day/Year</td>
+</tr>
+<tr class="odd">
+<td>Station</td>
+<td>Three sampling sites: nearshore1, nearshore2, offshore</td>
+</tr>
+<tr class="even">
+<td>Month</td>
+<td>Month that sample was collected (June - October)</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s change the Date_year column so that it has the <em>date</em> data type, since it is imported with the <em>character</em> data type. We will use the <em>mutate</em> command, which creates new columns by doing computation with existing ones. In this case, we create a new column called <em>Date</em> (overwriting the existing <em>Date</em> column) that will have the data from the <em>Date_year</em> column converted to a <em>date</em> format. Type <em>?mdy</em> into the R console to learn about what the <em>mdy</em> command does. What does the closely related <em>ymd</em> command do?</p>
+<p>When we run the <em>mutate</em> command on the <em>erie_meta</em> object it creates a new unnamed object with the new column. We assign that to the <em>erie_meta</em> object (using the <em>&lt;-</em> operator), overwriting the old object with the new one.</p>
+<p><strong>Note: You will not need to do this with the watershed metadata, because the dates are already formatted in a way that they can be read in as dates in that data set.</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># you won't need to do this with the watershed metadata</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>erie_meta <span class="ot">&lt;-</span> erie_meta <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> Date_year <span class="sc">%&gt;%</span> <span class="fu">mdy</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We won’t do much with the metadata for now. Howevever, let’s count the number of samples collected at each station each month. The <em>count</em> command give us an easy way to do this. How many samples were collected at the offshore station in September?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># you should count(SiteType, Site) for the watershed data</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>erie_meta <span class="sc">%&gt;%</span> <span class="fu">count</span>(Month, Station)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 15 × 3
+   Month     Station        n
+   &lt;chr&gt;     &lt;chr&gt;      &lt;int&gt;
+ 1 August    nearshore1     4
+ 2 August    nearshore2     4
+ 3 August    offshore       4
+ 4 July      nearshore1     4
+ 5 July      nearshore2     4
+ 6 July      offshore       4
+ 7 June      nearshore1     2
+ 8 June      nearshore2     2
+ 9 June      offshore       2
+10 October   nearshore1     4
+11 October   nearshore2     4
+12 October   offshore       4
+13 September nearshore1     5
+14 September nearshore2     5
+15 September offshore       4</code></pre>
+</div>
+</div>
+<p>Because it will be useful later, we’ll also make a list of the sample IDs that are present in the metadata. Here the <em>pull</em> function creates a separate vector from the <em>SampleID</em> column in the metadata.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>erie_samples <span class="ot">&lt;-</span> erie_meta <span class="sc">%&gt;%</span> <span class="fu">pull</span>(SampleID)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>erie_samples <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">20</span>) <span class="co">#print the first 20 to the screen</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "E0010_CNA" "E0012_CNA" "E0014_CNA" "E0016_CNA" "E0018_CNA" "E0020_CNA"
+ [7] "E0022_CNA" "E0024_CNA" "E0026_CNA" "E0028_CNA" "E0030_CNA" "E0032_CNA"
+[13] "E0034_CNA" "E0036_CNA" "E0038_CNA" "E0040_CNA" "E0042_CNA" "E0044_CNA"
+[19] "E0046_CNA" "E0048_CNA"</code></pre>
+</div>
+</div>
+</section>
+<section id="the-erie-shared-file" class="level2">
+<h2 class="anchored" data-anchor-id="the-erie-shared-file">The Erie shared file</h2>
+<p>The shared file contains information about how many times the sequences from different bacterial groups are read in each sample. The taxonomic groups are identified as <em>operational taxonomic units</em> (OTUs). Each OTU represents a group of similar 16S rRNA gene sequences. Later we will identify these with more standard/familiar taxa using the taxonomy file. For now it is sufficient to understand that a single OTU represents a group of closely related bacteria.</p>
+<p>Open the shared file in a text editor like <em>textEdit</em> (Mac) or <em>Notepad</em> (Windows). The shared file has tab-separated columns (as opposed to comma-separated columns). Note that there is an empty column at the end (there is a tab after the last value in each line).</p>
+<p>The <em>Group</em> variable gives the sample ID. There is one sample per row. The <em>numOTUs</em> column just counts the number of OTUs in the entire data set. It has the same value 19656 for every sample. The remaining columns count the number of times each OTU is read in the given sample.</p>
+<p>Since the file is not comma-separated, we cannot use <em>read_csv</em> to read it into R. We could use the <em>read_tsv</em> command (t stands for tab). However, we will use the <em>vroom</em> command from the <em>vroom</em> package to read in the data. This command is faster than <em>read_csv</em> or <em>read_tsv</em>, making it particularly useful for reading in large datasets. The shared file is often quite large, so we will practice reading it in using <em>vroom</em>.</p>
+<p>Before we read in the data we are going to use R to count the number of OTUs in the file. We are doing this so that we can specify the data types of the columns like we did when we read in the matadata. The code in the next two blocks is somewhat complicated and specialized, so don’t worry about understanding all of the details. It is designed to run quickly even with large shared files. We start by saving the path to the shared file in the variable <em>shared.path</em>. Then we load the <em>vroom</em> package. Next we read in the first line of the file as a single string of characters. This line includes the column labels. We count the number of times the string pattern “Otu” occurs in the first line. This is equal to one more than the number of columns that have OTU counts (the extra one is counting the <em>numOtus</em> column). There are 19656 Otus</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>shared.path <span class="ot">&lt;-</span> <span class="st">"raw_data/chabs.shared"</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vroom)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>vl <span class="ot">&lt;-</span> <span class="fu">vroom_lines</span>(shared.path, <span class="at">n_max =</span> <span class="dv">1</span>) <span class="co">#read in first line (header) as a single string (fast)</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>countOtuStr <span class="ot">&lt;-</span> <span class="fu">str_count</span>(vl, <span class="at">pattern =</span> <span class="st">"Otu"</span>) <span class="co">#count the occurrences of the string "Otu". this also counts "numOtus" column so is one more than number of OTUs (fast)</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>countOtuStr</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 19657</code></pre>
+</div>
+</div>
+<p>The most efficient data type for storing count data is the integer data type. We want to specify column types using a string of the form <code>dciiiiii...</code>. The first type is a double (more general numeric type). The second type is a character string, since this column will hold the sample IDs. The remaining columns are integers. The first of these is the <em>numOtus</em> column. The remaining ones are OTU read counts. Thus there should be 19657 of them altogether (the number we found in the previous block).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>col_types <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"dc"</span>,<span class="fu">rep</span>(<span class="st">"i"</span>,countOtuStr)) <span class="sc">%&gt;%</span> <span class="fu">str_flatten</span>() <span class="co">#single string of column types</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we read in the data using vroom. We also drop the variables we created just for the column specification. After we read in the data we immediately use the <em>select</em> command to drop the empty column (actually to select all of the columns that are not empty).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> <span class="fu">vroom</span>(shared.path, <span class="at">col_types =</span> col_types) <span class="sc">%&gt;%</span> <span class="co">#read in the data</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(<span class="sc">~!</span><span class="fu">all</span>(<span class="fu">is.na</span>(.x))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>New names:
+• `` -&gt; `...19660`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">c</span>(<span class="st">"col_types"</span>, <span class="st">"vl"</span>, <span class="st">"countOtuStr"</span>))</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>erie</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 345 × 19,659
+   label Group     numOtus Otu00001 Otu00002 Otu00003 Otu00004 Otu00005 Otu00006
+   &lt;dbl&gt; &lt;chr&gt;       &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;    &lt;int&gt;
+ 1  0.03 E0004_10…   19656        0        1        0        1        0        0
+ 2  0.03 E0004_22…   19656      149      727     1467      624        1        7
+ 3  0.03 E0004_3NA   19656    14750      556      378      204       11        0
+ 4  0.03 E0004_53…   19656    29333       87       39       33        3        0
+ 5  0.03 E0004_CNA   19656     5623     1523      286     1067        0        6
+ 6  0.03 E0005_10…   19656     6726      779       87      235       10        1
+ 7  0.03 E0005_22…   19656       68     1981      204      471        0        1
+ 8  0.03 E0005_3NA   19656     1822      256      502       89        0        0
+ 9  0.03 E0005_53…   19656     7707      240       72       43        0        0
+10  0.03 E0005_CNA   19656      439     2210      290      677        1        0
+# ℹ 335 more rows
+# ℹ 19,650 more variables: Otu00007 &lt;int&gt;, Otu00008 &lt;int&gt;, Otu00009 &lt;int&gt;,
+#   Otu00010 &lt;int&gt;, Otu00011 &lt;int&gt;, Otu00012 &lt;int&gt;, Otu00013 &lt;int&gt;,
+#   Otu00014 &lt;int&gt;, Otu00015 &lt;int&gt;, Otu00016 &lt;int&gt;, Otu00017 &lt;int&gt;,
+#   Otu00018 &lt;int&gt;, Otu00019 &lt;int&gt;, Otu00020 &lt;int&gt;, Otu00021 &lt;int&gt;,
+#   Otu00022 &lt;int&gt;, Otu00023 &lt;int&gt;, Otu00024 &lt;int&gt;, Otu00025 &lt;int&gt;,
+#   Otu00026 &lt;int&gt;, Otu00027 &lt;int&gt;, Otu00028 &lt;int&gt;, Otu00029 &lt;int&gt;, …</code></pre>
+</div>
+</div>
+<p>Let’s look at the data that we read into R. Recall that the <em>Group</em> variable gives the sample ID. Note that there are 345 samples (one row per sample). We are only interested in the 56 samples that are present in the metadata, so there are a lot of extra samples here. The <em>numOTUs</em> column just counts the number of OTUs in the entire data set. It has the same value 19656 for every sample–this matches the number we determined above. The remaining 19656 columns count the number of times each OTU is read in the given sample.</p>
+<p>Let’s filter the data so that we only keep the samples that are present in the metadata. We start by renaming the column that contains the sample IDs so that it has the same name (<em>SampleID</em>) as the corresponding column in the metadata. Then we filter the data using the <em>filter</em> command. This command returns a tibble with a subset of the rows that were in the original data. We only want the rows that correspond with samples in the metadata. These samples are listed in the <em>erie_samples</em> vector we created earlier. The filter command looks for rows in the <em>erie</em> data where the <em>SampleID</em> is an element of the <em>erie_samples</em> vector, and it keeps only those rows.</p>
+<p>How many rows remain after we run this code? We can use the <em>dim</em> command to calculate the number of rows and columns in the data. Is it the number you expected?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">SampleID =</span> Group) <span class="sc">%&gt;%</span> <span class="co">#start by making ID column names consistent</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(SampleID <span class="sc">%&gt;%</span> <span class="fu">is.element</span>(erie_samples))</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>erie <span class="sc">%&gt;%</span> dim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]    56 19659</code></pre>
+</div>
+</div>
+<p>There is no reason to retain OTUs that do not appear in any of the remaining samples (those that have 0 reads in all of them). Let’s remove them. The following command is a bit complicated. It starts by finding columns with a numeric data type that have non-positive sums (less or equal to 0 reads). Out of those columns it finds the ones that start with the string “Otu”. Finally, it drops the matching columns from the data (the <em>select</em> command drops columns instead of remaining them when they are preceded by a - sign).</p>
+<p>How many columns do we have now? How many OTUs were removed from the data because they did not have any reads?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>(<span class="fu">where</span>(<span class="sc">~</span> <span class="fu">is.numeric</span>(.x) <span class="sc">&amp;&amp;</span> <span class="fu">sum</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">&lt;=</span> <span class="dv">0</span>) <span class="sc">&amp;</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>             <span class="fu">starts_with</span>(<span class="st">"Otu"</span>)))</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>erie <span class="sc">%&gt;%</span> dim</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]   56 8950</code></pre>
+</div>
+</div>
+<p>After filtering the data and removing the extra OTUs, we have reduced the size of the data considerably (by more than a factor of 10). Since working with the smaller data set uses less memory and speeds up computations, doing this sort of filtering when we can is very useful.</p>
+<p>Let’s make a list of the OTUs that we retained. We will use this list later. We do this by extracting the variable names for remaining columns that start with the string “Otu”.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>erie_otus <span class="ot">&lt;-</span> <span class="fu">names</span>(erie <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">"Otu"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="lake-erie-taxonomy-file" class="level2">
+<h2 class="anchored" data-anchor-id="lake-erie-taxonomy-file">Lake Erie taxonomy file</h2>
+<p>Finally, we import and explore the taxonomy file. If we open the file in a text editor we see that it has tab separated columns, too. This time there is no extra column at the end. We simply read the data in using the <em>read_tsv</em> command.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>(erie_tax <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">"raw_data/chabs-silva.taxonomy"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 19656 Columns: 3
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: "\t"
+chr (2): OTU, Taxonomy
+dbl (1): Size
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 19,656 × 3
+   OTU         Size Taxonomy                                                    
+   &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;                                                       
+ 1 Otu00001 2761777 Bacteria(100);Cyanobacteria(100);Chloroplast(100);unclassif…
+ 2 Otu00002  280694 Bacteria(100);Proteobacteria(100);Betaproteobacteria(100);B…
+ 3 Otu00003  267946 Bacteria(100);Cyanobacteria(100);Chloroplast(100);unclassif…
+ 4 Otu00004  564953 Bacteria(100);Actinobacteria(100);Actinobacteria(100);Frank…
+ 5 Otu00005  388677 Bacteria(100);Cyanobacteria(100);Cyanobacteria(100);Subsect…
+ 6 Otu00006  447037 Bacteria(100);Actinobacteria(100);Actinobacteria(100);Frank…
+ 7 Otu00007  134495 Bacteria(100);Cyanobacteria(100);Cyanobacteria(100);Subsect…
+ 8 Otu00008  143655 Bacteria(100);Bacteroidetes(100);Sphingobacteriia(100);Sphi…
+ 9 Otu00009  419716 Bacteria(100);Cyanobacteria(100);Chloroplast(100);unclassif…
+10 Otu00010  147682 Bacteria(100);Actinobacteria(100);Actinobacteria(100);Frank…
+# ℹ 19,646 more rows</code></pre>
+</div>
+</div>
+<p>These data are organized differently than the shared data. In particular, there is a row for each OTU (instead of a row for each sample). There are three columns and 19656 rows. The first column lists the OTU. The second column, <em>Size</em>, lists the number of sequences in the OTU. The third column, <em>Taxonomy</em> lists the taxonomy for the OTU.</p>
+<p>Each element of the third column is a semicolon-separated list of the form <code>[Kingdom](#);[Phylum](#);[Class](#);[Order](#);[Family](#);[Genus](#);[Species](#)</code>. However, in this case none of the OTU are classified down to the species level. The number in parentheses is the <em>bootstrap value</em>. Higher numbers (closer to 100) indicate a higher level of support for the classification.</p>
+<p>Let’s split the taxonomy into 7 columns (for the 7 different taxonomic levels) and add them to the tibble. We do not include the bootstrap values in these columns.</p>
+<p>Do not worry about understanding the details of the following code at this point. The taxonomy is split at the semicolons, then the bootstrap values are removed, using <em>regular expressions</em> to identify where they occur.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>tax_levels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Kingdom"</span>, <span class="st">"Phylum"</span>, <span class="st">"Class"</span>,</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Order"</span>, <span class="st">"Family"</span>, <span class="st">"Genus"</span>, <span class="st">"Species"</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>erie_tax <span class="ot">&lt;-</span> erie_tax <span class="sc">%&gt;%</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(Taxonomy, tax_levels, <span class="at">sep =</span> <span class="st">";"</span>, <span class="at">extra =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(tax_levels), <span class="sc">~</span> <span class="fu">str_remove</span>(.x, <span class="st">"(</span><span class="sc">\\</span><span class="st">(</span><span class="sc">\\</span><span class="st">d{1,3}</span><span class="sc">\\</span><span class="st">))$"</span>)))</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="co"># remove bootstrap value - even works if parentheses in name for some reason</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a><span class="co"># looks for 1-3 digits \\d{1,3}</span></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co"># between parentheses \\(xxx\\)</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="co"># at end of string (xxx)$</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>erie_tax</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 19,656 × 9
+   OTU         Size Kingdom  Phylum         Class     Order Family Genus Species
+   &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;  
+ 1 Otu00001 2761777 Bacteria Cyanobacteria  Chloropl… uncl… uncla… uncl… ""     
+ 2 Otu00002  280694 Bacteria Proteobacteria Betaprot… Burk… Comam… Limn… ""     
+ 3 Otu00003  267946 Bacteria Cyanobacteria  Chloropl… uncl… uncla… uncl… ""     
+ 4 Otu00004  564953 Bacteria Actinobacteria Actinoba… Fran… Spori… hgcI… ""     
+ 5 Otu00005  388677 Bacteria Cyanobacteria  Cyanobac… Subs… Famil… Micr… ""     
+ 6 Otu00006  447037 Bacteria Actinobacteria Actinoba… Fran… Spori… hgcI… ""     
+ 7 Otu00007  134495 Bacteria Cyanobacteria  Cyanobac… Subs… Famil… Syne… ""     
+ 8 Otu00008  143655 Bacteria Bacteroidetes  Sphingob… Sphi… Chiti… Sedi… ""     
+ 9 Otu00009  419716 Bacteria Cyanobacteria  Chloropl… uncl… uncla… uncl… ""     
+10 Otu00010  147682 Bacteria Actinobacteria Actinoba… Fran… Spori… uncl… ""     
+# ℹ 19,646 more rows</code></pre>
+</div>
+</div>
+<p>The taxonomy file contains information about all of the OTUs that were originally present in the shared file. We remomved the ones with 0 reads from the shared data. Let’s do the same thing with the taxonomy data. We can use the <em>erie_otus</em> vector that we created earlier to do this. How many OTUS remain after filtering?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>erie_tax <span class="ot">&lt;-</span> erie_tax <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(OTU <span class="sc">%&gt;%</span> <span class="fu">is.element</span>(erie_otus))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Because we are only interested in bacterial sequences, we next filter out Eukaryotes, Archaea, chloroplasts, mitochondria from the taxonomy table.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>erie_tax <span class="ot">&lt;-</span> erie_tax <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Kingdom <span class="sc">==</span> <span class="st">"Bacteria"</span>,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>         Family <span class="sc">!=</span> <span class="st">"mitochondria"</span>,</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>         Class <span class="sc">!=</span> <span class="st">"Chloroplast"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Since we removed some OTUs that did not correspond with bacterial sequences, we will want to remove the same OTUs from the shared data (the <em>erie</em> tibble). We’ll make a list of the remaining OTUs first.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>erie_otus <span class="ot">&lt;-</span> erie_tax <span class="sc">%&gt;%</span> <span class="fu">pluck</span>(<span class="st">"OTU"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we use the list we just made to remove OTUs that represent Eukaryotes, Archaea, chloroplasts, mitochondria from the <em>erie</em> data. Since OTUs correspond with columns in the <em>erie</em> data we use the <em>select</em> command (to select columns) instead of the <em>filter</em> command (to filter rows). We want to keep the columns whose names do not (<code>!</code> means ‘not’) start with the string “Otu” or (<code>|</code> means ‘or’) whose names are listed in the <em>erie_otus</em> vector.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>erie <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">!</span><span class="fu">starts_with</span>(<span class="st">"Otu"</span>) <span class="sc">|</span> <span class="fu">all_of</span>(erie_otus))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="counts-per-sample" class="level2">
+<h2 class="anchored" data-anchor-id="counts-per-sample">Counts per sample</h2>
+<p>Now that we have read in and cleaned all three data sets, we will perform a simple analysis of the samples. We will count the total number of sequences that were read (and assigned to an OTU) in each sample. Since the reads are counted in the shared file, we use the <em>erie</em> tibble to generate the summary count data. We use the <em>mutate</em> command to create a new column that sums the reads accross all of the OTU columns for each row. Then we select just the <em>SampleID</em> and the column we just created (<em>reads</em>) since that is all we need for our summary.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>erie_sums <span class="ot">&lt;-</span> erie <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">reads =</span> <span class="fu">rowSums</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"Otu"</span>))) <span class="sc">%&gt;%</span> <span class="fu">as.integer</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SampleID, reads)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>erie_sums</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 56 × 2
+   SampleID  reads
+   &lt;chr&gt;     &lt;int&gt;
+ 1 E0010_CNA 28582
+ 2 E0012_CNA 23972
+ 3 E0014_CNA 25082
+ 4 E0016_CNA 21631
+ 5 E0018_CNA 28545
+ 6 E0020_CNA 28204
+ 7 E0022_CNA 29449
+ 8 E0024_CNA 28831
+ 9 E0026_CNA 47206
+10 E0028_CNA 25905
+# ℹ 46 more rows</code></pre>
+</div>
+</div>
+<p>Next we make a histogram to help us visualize the sample summary. We can use <em>ggplot</em> to create the histogram. The format of the command is similar to the command we used to create scatter plots in Tutorial 3. We do not need to specifiy a ‘y’ value, because the histogram plots values of a single variable (<em>reads</em>). We specify several options (e.g., fill) to change the way the plot looks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> erie_sums, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> reads)) <span class="sc">+</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"coral"</span>, <span class="at">binwidth =</span> <span class="dv">2500</span>) <span class="sc">+</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Distribution of sample sequencing depth"</span>) <span class="sc">+</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Read counts"</span>) <span class="sc">+</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.y =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="040_Erie_Data_Explore_Read_Histo_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Along with our graphical summary, we create a quick numerical summary by printing out some statistics (the miniumum, maximum, and mean number of reads). We use the <em>summarize</em> command to do this.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>erie_sums <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="at">min =</span> <span class="fu">min</span>(reads), <span class="at">mean =</span> <span class="fu">mean</span>(reads), <span class="at">max =</span> <span class="fu">max</span>(reads))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+    min   mean   max
+  &lt;int&gt;  &lt;dbl&gt; &lt;int&gt;
+1 15631 30975. 47771</code></pre>
+</div>
+</div>
+</section>
+<section id="filter-metadata-and-add-sequencing-depth" class="level2">
+<h2 class="anchored" data-anchor-id="filter-metadata-and-add-sequencing-depth">Filter metadata and add sequencing depth</h2>
+<p>We’ll remove samples from the metadata that do not appear in the sequencing data (in this case there are none to remove, but there will be in the watershed data). We’ll also add the sequencing depth (reads) that we just calculated to the metadata, but we will use a more descriptive name (<em>sequencingDepth</em> rather than <em>reads</em>). We’ll use the <em>rename</em> command for the name change. We can use a <em>join</em> command to drop the extra samples (if we have any) and to add the <em>sequencingDepth</em> column at the same time.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>erie_meta <span class="ot">&lt;-</span> erie_meta <span class="sc">%&gt;%</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">right_join</span>(erie_sums) <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">sequencingDepth =</span> reads)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(SampleID)`</code></pre>
+</div>
+</div>
+</section>
+<section id="write-out-cleaned-data" class="level2">
+<h2 class="anchored" data-anchor-id="write-out-cleaned-data">Write out cleaned data</h2>
+<p>We will save the cleaned data sets we have created. We will use these for future analyses.</p>
+<p>Since we have <em>cleaned</em> these data, we save them in the <em>clean_data</em> subdirectory of our <em>watershedErie</em> directory. We save each tibble as an RDS file that we can read into R later when we need it.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>erie <span class="sc">%&gt;%</span> <span class="fu">saveRDS</span>(<span class="st">"clean_data/erie.rds"</span>)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>erie_tax <span class="sc">%&gt;%</span> <span class="fu">saveRDS</span>(<span class="st">"clean_data/erie_tax.rds"</span>)</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>erie_meta <span class="sc">%&gt;%</span> <span class="fu">saveRDS</span>(<span class="st">"clean_data/erie_meta.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
